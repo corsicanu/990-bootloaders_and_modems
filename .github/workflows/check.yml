@@ -1,0 +1,182 @@
+name: Check firmware update
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  push:
+
+jobs:
+  update:
+    runs-on: ubuntu-18.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - model: "SM-G980F"
+            region: "DBT"
+            codename: "x1slte"
+          - model: "SM-G981B"
+            region: "DBT"
+            codename: "x1sxxx"
+          - model: "SM-G985F"
+            region: "DBT"
+            codename: "y2slte"
+          - model: "SM-G986B"
+            region: "DBT"
+            codename: "y2sxxx"
+          - model: "SM-G988B"
+            region: "DBT"
+            codename: "z3sxxx"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Compare latest version with current version
+        id: check
+        run: |
+          need_update=0
+          latest=`curl --retry 5 --retry-delay 5 http://fota-cloud-dn.ospserver.net/firmware/${{ matrix.region }}/${{ matrix.model }}/version.xml | grep latest | sed 's/^[^>]*>//' | sed 's/<.*//'`
+          latest_short=`echo $latest | cut -d'/' -f1`
+          latest_csc=`echo $latest | cut -d'/' -f2`
+          latest_modem=`echo $latest | cut -d'/' -f3`
+          current=`cat current.${{ matrix.model }}` || need_update=1
+          [[ $latest != $current ]] && need_update=1
+          echo ::set-output name=latest_version::$latest
+          echo ::set-output name=latest_shortversion::$latest_short
+          echo ::set-output name=latest_cscversion::$latest_csc
+          echo ::set-output name=latest_modemversion::$latest_modem
+          echo ::set-output name=need_update::$need_update
+
+      - name: Install dependencies
+        if: steps.check.outputs.need_update == 1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y liblz4-tool zip
+          sudo wget -O /usr/bin/dtc http://de.corsicanu.ro/downloads/dtc && sudo chmod +x /usr/bin/dtc
+          sudo wget -O /usr/bin/mkdtimg http://de.corsicanu.ro/downloads/mkdtimg && sudo chmod +x /usr/bin/mkdtimg
+          sudo wget -O /usr/bin/splitdt http://de.corsicanu.ro/downloads/splitdt && sudo chmod +x /usr/bin/splitdt
+          sudo wget -O /usr/bin/unpackbootimg http://de.corsicanu.ro/downloads/unpackbootimg && sudo chmod +x /usr/bin/unpackbootimg
+          sudo wget -O /usr/bin/extract-ikconfig http://de.corsicanu.ro/downloads/extract-ikconfig && sudo chmod +x /usr/bin/extract-ikconfig
+          sudo wget -O /usr/bin/samfirm https://github.com/jesec/SamFirm.NET/releases/latest/download/linux-x64 && sudo chmod +x /usr/bin/samfirm
+
+      - name: Fetch firmware
+        if: steps.check.outputs.need_update == 1
+        run: samfirm -m ${{ matrix.model }} -r ${{ matrix.region }}
+
+      - name: Print directory structure
+        if: steps.check.outputs.need_update == 1
+        run: ls -la ${{ matrix.model }}_${{ matrix.region }}
+
+      - name: Get path of files
+        if: steps.check.outputs.need_update == 1
+        id: files
+        run: |
+          echo ::set-output name=bl::`find -name BL*`
+          echo ::set-output name=ap::`find -name AP*`
+          echo ::set-output name=cp::`find -name CP*`
+          echo ::set-output name=csc::`find -name HOME_CSC*`
+
+      - name: Check downloaded firmware version
+        if: steps.check.outputs.need_update == 1
+        run: |
+          version_short=`echo ${{ steps.files.outputs.ap }} | cut -d'_' -f3`
+          version_csc=`echo ${{ steps.files.outputs.csc }} | cut -d'_' -f6`
+          version_modem=`echo ${{ steps.files.outputs.cp }} | cut -d'_' -f3`
+          changelist=`echo ${{ steps.files.outputs.ap }} | cut -d'_' -f4`
+          [[ $version_short == ${{ steps.check.outputs.latest_shortversion }} ]]
+          [[ $version_csc == ${{ steps.check.outputs.latest_cscversion }} ]]
+          [[ $version_modem == ${{ steps.check.outputs.latest_modemversion }} ]]
+          echo PDA version: $version_short > versions.txt
+          echo CSC version: $version_csc >> versions.txt
+          echo Modem version: $version_modem >> versions.txt
+          echo Changelist: $changelist >> versions.txt
+
+      - name: Print available disk space
+        if: steps.check.outputs.need_update == 1
+        run: |
+          pwd
+          sudo df -h
+          
+      - name: Create zip environment
+        if: steps.check.outputs.need_update == 1
+        run: |
+          target_device=`echo ${{ matrix.model }} | cut -d'-' -f2`
+          target_version=${{ steps.check.outputs.latest_shortversion }}
+          mkdir -p $target_version configs tmp
+          cp -r META-INF $target_version
+          sed -i "s/target_device/$target_device/g" $target_version/META-INF/com/google/android/updater-script
+          sed -i "s/target_version/$target_version/g" $target_version/META-INF/com/google/android/updater-script
+          
+      - name: Extract images from AP/BL, dump configs and create zips
+        if: steps.check.outputs.need_update == 1
+        id: releases
+        run: |
+          target_version=${{ steps.check.outputs.latest_shortversion }}
+          bls=(harx.bin keystorage.bin ldfw.img sboot.bin ssp.img tzar.img tzsw.img uh.bin up_param.bin dtbo.img modem.bin)
+          tar xvf ${{ steps.files.outputs.ap }} dtbo.img.lz4 boot.img.lz4 recovery.img.lz4
+          tar xvf ${{ steps.files.outputs.bl }} 
+          tar xvf ${{ steps.files.outputs.cp }}
+          for i in `ls | grep lz4`; do lz4 -dm $i ; rm -rf $i; done
+          extract-ikconfig boot.img > configs/exynos9830-${{ matrix.codename }}_defconfig
+          cd tmp
+          unpackbootimg -i ../boot.img >> ../configs/bootimg.args && mkdtimg dump boot.img-dtb >> ../configs/exynos9830.cfg
+          splitdt boot.img-dtb && dtc dtbdump_* -I dtb -O dts -o ../configs/exynos9830.dts && rm -rf *
+          mkdtimg dump ../dtbo.img >> ../configs/${{ matrix.codename }}.cfg && splitdt ../dtbo.img
+          for i in `ls | grep dtbdump_`; do dtc $i -I dtb -O dts -o $i.txt; done
+          for i in `ls | grep txt`;
+            do mv $i ../configs/$(cat $i | grep "model =" | sed 's/Samsung //; s/\t//g; s/\"//g; s/model = //; s/\;//' | awk '{print tolower($7"-"$1"_"$2"_"$3"_"$4".dts")}');
+          done
+          cd ../configs
+          zip -r ../$target_version-configs.zip *
+          cd ..
+          mv boot.img $target_version-stock_boot.img
+          mv recovery.img $target_version-stock_recovery.img
+          for i in ${bls[@]}; do [[ -e $i ]] && mv $i $target_version/$i; done
+          cd $target_version
+          zip -r ../$target_version-twrp_flashable.zip *
+          rm -rf META-INF
+          tar cvf ../$target_version-odin_flashable.tar *
+          cd .. && ls
+          echo ::set-output name=zip::`find -name $target_version-twrp_flashable.zip`
+          echo ::set-output name=tar::`find -name $target_version-odin_flashable.tar`
+          echo ::set-output name=boot::`find -name $target_version-stock_boot.img`
+          echo ::set-output name=recovery::`find -name $target_version-stock_recovery.img`
+          echo ::set-output name=configs::`find -name $target_version-configs.zip`
+
+      - name: Update current version
+        if: steps.check.outputs.need_update == 1
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git pull origin ${{github.ref}} --ff-only
+          echo ${{ steps.check.outputs.latest_version }} > current.${{ matrix.model }}
+          git add current.${{ matrix.model }}
+          git commit -m "${{ matrix.model }}: ${{ steps.check.outputs.latest_version }}"
+          git tag ${{ steps.check.outputs.latest_shortversion }}
+
+      - name: Push changes to repo
+        if: steps.check.outputs.need_update == 1
+        uses: ad-m/github-push-action@master
+        with:
+          tags: true
+          github_token: ${{ secrets.TOKEN }}
+
+      - name: Upload release assets
+        if: steps.check.outputs.need_update == 1
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          body_path: versions.txt
+          tag_name: ${{ steps.check.outputs.latest_shortversion }}
+          files: |
+            ${{ steps.releases.outputs.zip }}
+            ${{ steps.releases.outputs.tar }}
+            ${{ steps.releases.outputs.boot }}
+            ${{ steps.releases.outputs.recovery }}
+            ${{ steps.releases.outputs.configs }}
+ 

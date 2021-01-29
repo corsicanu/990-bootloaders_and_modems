@@ -1,0 +1,47 @@
+assert(is_substring("target_device", getprop("ro.boot.bootloader")) || abort("Error: This package is only for target_device device, aborting..."););
+ui_print(" ");
+ui_print(" ");
+ui_print("target_version Modem and bootloader flasher");
+ui_print(" by corsicanu@xda-developers.com");
+ui_print(" ");
+ui_print(" - checking device info...");
+run_program("/system/bin/sleep","1");
+
+ui_print(" - updating bootloader files..");
+assert(mark_header_bt("/dev/block/platform/13100000.ufs/by-name/bota", 0, 0, "000"));
+assert(write_data_bt("harx.bin", "/dev/block/platform/13100000.ufs/by-name/bota", 8, 3145728));
+run_program("/system/bin/sleep","1");
+assert(write_data_bt("keystorage.bin", "/dev/block/platform/13100000.ufs/by-name/bota", 3145772, 524288));
+run_program("/system/bin/sleep","1");
+assert(write_data_bt("ldfw.img", "/dev/block/platform/13100000.ufs/by-name/bota", 3670096, 6291456));
+run_program("/system/bin/sleep","1");
+assert(write_data_bt("sboot.bin", "/dev/block/platform/13100000.ufs/by-name/bota", 9961588, 4194304));
+run_program("/system/bin/sleep","1");
+assert(write_data_bt("ssp.img", "/dev/block/platform/13100000.ufs/by-name/bota", 14155928, 496640));
+run_program("/system/bin/sleep","1");
+assert(write_data_bt("tzar.img", "/dev/block/platform/13100000.ufs/by-name/bota", 14652604, 7340816));
+run_program("/system/bin/sleep","1");
+assert(write_data_bt("tzsw.img", "/dev/block/platform/13100000.ufs/by-name/bota", 21993456, 1572864));
+run_program("/system/bin/sleep","1");
+assert(write_data_bt("uh.bin", "/dev/block/platform/13100000.ufs/by-name/bota", 23566356, 140464));
+run_program("/system/bin/sleep","1");
+assert(write_data_bt("up_param.bin", "/dev/block/platform/13100000.ufs/by-name/bota", 23706856, 3379200));
+run_program("/system/bin/sleep","1");
+assert(mark_header_bt("/dev/block/platform/13100000.ufs/by-name/bota", 0, 10, 3142939818));
+run_program("/system/bin/sleep","1");
+
+ui_print(" - updating modem..");
+package_extract_file("modem.bin", "/dev/block/by-name/radio");
+run_program("/system/bin/sleep","1");
+ui_print(" - updating dt..");
+package_extract_file("dtbo.img", "/dev/block/by-name/dtbo");
+run_program("/system/bin/sleep","1");
+
+set_progress(1.000000);
+ui_print(" ");
+ui_print(" ");
+ui_print(" !!! WARNING !!!");
+ui_print("Your phone will reboot now to finish the process.");
+ui_print(" ");
+run_program("/system/bin/sleep","5");
+run_program("/system/bin/reboot");
