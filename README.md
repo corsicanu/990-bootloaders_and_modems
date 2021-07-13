@@ -1,5 +1,5 @@
 # Modem and bootloader repository 
-**for Samsung Galaxy S20 / S20+ / S20 Ultra Exynos variants**
+**for Samsung Galaxy S20 / S20+ / S20 Ultra & Note20 / Note20 Ultra Exynos variants**
 
 ### Do note this is not a way to downgrade revision of modem and bootloader.
 
@@ -25,14 +25,9 @@ involved in this for your failures, you are the only one choosing to mess up wit
 All the files here are pulled from official firmwares of the devices mentioned.
 ```
 
-## Instructions:
-**1. Update via TWRP:**
-   - Download **\*\-twrp\_flashable\.zip** from [releases](https://github.com/corsicanu/990-bootloaders_and_modems/releases)
-   - Boot phone in TWRP
-   - Flash the downloaded zip as any other
-   - Optional - download and flash [TWRP_Bootlogo_patcher.zip](https://github.com/corsicanu/TWRP_Bootlogo_patcher/releases/latest) to get rid of the boot warning
+### WARNING!!! SOME NEW DEVICES WILL NOT BOOT IF YOU ONLY UPGRADE MODEM/BOOTLOADER, YOU WILL ALSO NEED TO INSTALL FULL FIRMWARE OF SPECIFIC VERSION YOU ARE FLASHING, THIS REPOSITORY IS ONLY PROVIDED FOR RESEARCH PURPOSES AND EXPERIMENTS, MAKE SURE YOU ARE AWARE OF ALL THE RISKS BEFORE DOING ANYTHING TO YOUR DEVICE
 
-**2. Update via Odin:**
+**Update via Odin:**
    - Download [Odin v3.14.1](https://downloads.corsicanu.ro/samsung/Odin3_v3.14.1.zip)
    - Download and install [Samsung Drivers](https://downloads.corsicanu.ro/samsung/SAMSUNG_USB_Driver_for_Mobile_Phones.zip)
    - Download **\*\-odin\_flashable\.tar** from [releases](https://github.com/corsicanu/990-bootloaders_and_modems/releases)

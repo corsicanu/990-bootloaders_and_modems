@@ -28,6 +28,18 @@ jobs:
           - model: "SM-G988B"
             region: "DBT"
             codename: "z3sxxx"
+          - model: "SM-N980F"
+            region: "DBT"
+            codename: "c1sxx"
+          - model: "SM-N981B"
+            region: "DBT"
+            codename: "c1sxxx"
+          - model: "SM-N985F"
+            region: "DBT"
+            codename: "c2sxx"
+          - model: "SM-N986B"
+            region: "DBT"
+            codename: "c2sxxx"
 
     steps:
       - name: Checkout repo
