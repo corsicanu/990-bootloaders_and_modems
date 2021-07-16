@@ -15,8 +15,6 @@ jobs:
         include:
           - model: "SM-G980F"
             region: "DBT"
-          - model: "SM-G781B"
-            region: "BRI"
             codename: "x1slte"
           - model: "SM-G981B"
             region: "DBT"
@@ -37,7 +35,7 @@ jobs:
             region: "DBT"
             codename: "c1sxxx"
           - model: "SM-N985F"
-            region: "DBT"
+            region: "AUT"
             codename: "c2sxx"
           - model: "SM-N986B"
             region: "DBT"
