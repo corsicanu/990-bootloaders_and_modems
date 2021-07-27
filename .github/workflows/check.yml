@@ -35,7 +35,7 @@ jobs:
             region: "DBT"
             codename: "c1sxxx"
           - model: "SM-N985F"
-            region: "AUT"
+            region: "TPA"
             codename: "c2sxx"
           - model: "SM-N986B"
             region: "DBT"
