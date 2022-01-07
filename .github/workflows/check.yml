@@ -14,31 +14,31 @@ jobs:
       matrix:
         include:
           - model: "SM-G980F"
-            region: "DBT"
+            region: "AUT"
             codename: "x1slte"
           - model: "SM-G981B"
-            region: "DBT"
+            region: "AUT"
             codename: "x1sxxx"
           - model: "SM-G985F"
-            region: "DBT"
+            region: "AUT"
             codename: "y2slte"
           - model: "SM-G986B"
-            region: "DBT"
+            region: "AUT"
             codename: "y2sxxx"
           - model: "SM-G988B"
-            region: "DBT"
+            region: "AUT"
             codename: "z3sxxx"
           - model: "SM-N980F"
-            region: "DBT"
+            region: "AUT"
             codename: "c1sxx"
           - model: "SM-N981B"
-            region: "DBT"
+            region: "AUT"
             codename: "c1sxxx"
           - model: "SM-N985F"
-            region: "XSG"
+            region: "AUT"
             codename: "c2sxx"
           - model: "SM-N986B"
-            region: "DBT"
+            region: "AUT"
             codename: "c2sxxx"
 
     steps:
@@ -96,7 +96,7 @@ jobs:
         if: steps.check.outputs.need_update == 1
         run: |
           version_short=`echo ${{ steps.files.outputs.ap }} | cut -d'_' -f3`
-          version_csc=`echo ${{ steps.files.outputs.csc }} | cut -d'_' -f6`
+          version_csc=`echo ${{ steps.files.outputs.csc }} | cut -d'_' -f5`
           version_modem=`echo ${{ steps.files.outputs.cp }} | cut -d'_' -f3`
           changelist=`echo ${{ steps.files.outputs.ap }} | cut -d'_' -f4`
           [[ $version_short == ${{ steps.check.outputs.latest_shortversion }} ]]
