@@ -35,7 +35,7 @@ jobs:
             region: "AUT"
             codename: "c1sxxx"
           - model: "SM-N985F"
-            region: "AUT"
+            region: "TUR"
             codename: "c2sxx"
           - model: "SM-N986B"
             region: "AUT"
