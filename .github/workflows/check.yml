@@ -126,12 +126,13 @@ jobs:
         run: |
           target_version=${{ steps.check.outputs.latest_shortversion }}
           bls=(harx.bin keystorage.bin ldfw.img sboot.bin ssp.img tzar.img tzsw.img uh.bin up_param.bin dtbo.img modem.bin)
-          tar xvf ${{ steps.files.outputs.ap }} dtbo.img.lz4 boot.img.lz4 recovery.img.lz4
+          tar xvf ${{ steps.files.outputs.ap }} dtbo.img.lz4 boot.img.lz4 recovery.img.lz4 super.img.lz4
           tar xvf ${{ steps.files.outputs.bl }} 
           tar xvf ${{ steps.files.outputs.cp }}
           for i in `ls | grep lz4`; do lz4 -dm $i ; rm -rf $i; done
+          for i in `ls | grep img`; do echo $i -n >> configs/exynos9830-${{ matrix.codename }}_sizes; echo -n " " >> configs/exynos9830-${{ matrix.codename }}_sizes; stat --printf="%s" $i  >> configs/exynos9830-${{ matrix.codename }}_sizes; done
           extract-ikconfig boot.img > configs/exynos9830-${{ matrix.codename }}_defconfig
-          cd tmp
+          rm -rf super.img && cd tmp
           unpackbootimg -i ../boot.img >> ../configs/bootimg.args && mkdtimg dump boot.img-dtb >> ../configs/exynos9830.cfg
           splitdt boot.img-dtb && dtc dtbdump_* -I dtb -O dts -o ../configs/exynos9830.dts && rm -rf *
           mkdtimg dump ../dtbo.img >> ../configs/${{ matrix.codename }}.cfg && splitdt ../dtbo.img
