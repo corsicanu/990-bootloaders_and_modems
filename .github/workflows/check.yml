@@ -99,7 +99,7 @@ jobs:
           version_short=`echo ${{ steps.files.outputs.ap }} | cut -d'_' -f3`
           version_csc=`echo ${{ steps.files.outputs.csc }} | cut -d'_' -f5`
           version_modem=`echo ${{ steps.files.outputs.cp }} | cut -d'_' -f3`
-          changelist=`echo ${{ steps.files.outputs.ap }} | cut -d'_' -f4`
+          changelist=`echo ${{ steps.files.outputs.ap }} | cut -d'_' -f5`
           [[ $version_short == ${{ steps.check.outputs.latest_shortversion }} ]]
           [[ $version_csc == ${{ steps.check.outputs.latest_cscversion }} ]]
           [[ $version_modem == ${{ steps.check.outputs.latest_modemversion }} ]]
@@ -131,7 +131,7 @@ jobs:
           tar xvf ${{ steps.files.outputs.bl }} 
           tar xvf ${{ steps.files.outputs.cp }}
           for i in `ls | grep lz4`; do lz4 -dm $i ; rm -rf $i; done
-          for i in `ls | grep img`; do echo $i -n >> configs/exynos9830-${{ matrix.codename }}_sizes; echo -n " " >> configs/exynos9830-${{ matrix.codename }}_sizes; stat --printf="%s" $i  >> configs/exynos9830-${{ matrix.codename }}_sizes; done
+          for i in `ls | grep img`; do echo -n $i " " >> configs/exynos9830-${{ matrix.codename }}_sizes; stat --printf="%s" $i >> configs/exynos9830-${{ matrix.codename }}_sizes; echo "" >> configs/exynos9830-${{ matrix.codename }}_sizes; done
           extract-ikconfig boot.img > configs/exynos9830-${{ matrix.codename }}_defconfig
           rm -rf super.img && cd tmp
           unpackbootimg -i ../boot.img >> ../configs/bootimg.args && mkdtimg dump boot.img-dtb >> ../configs/exynos9830.cfg
