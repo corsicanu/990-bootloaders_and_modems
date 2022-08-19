@@ -1,6 +1,7 @@
 name: Check firmware update
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 12 * * *"
   push:
@@ -36,7 +37,7 @@ jobs:
             region: "AUT"
             codename: "c1sxxx"
           - model: "SM-N985F"
-            region: "TUR"
+            region: "DBT"
             codename: "c2sxx"
           - model: "SM-N986B"
             region: "AUT"
