@@ -69,6 +69,11 @@ jobs:
         if: env.need_update == 1
         run: |
           sudo apt-get update
+          sudo apt-get remove --purge -y "php*" "dotnet*" "mysql*" "nodejs*" "clang*" "google*"
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          sudo rm -rf /usr/local
+          sudo apt-get update
           sudo apt-get install -y liblz4-tool zip
           sudo wget -O /usr/bin/dtc https://corsica.nu/dtc && sudo chmod +x /usr/bin/dtc
           sudo wget -O /usr/bin/mkdtimg https://corsica.nu/mkdtimg && sudo chmod +x /usr/bin/mkdtimg
