@@ -18,30 +18,39 @@ jobs:
           - model: "SM-G980F"
             region: "AUT"
             codename: "x1slte"
+            imei: "356007111234568"
           - model: "SM-G981B"
             region: "AUT"
             codename: "x1sxxx"
+            imei: "354397111234565"
           - model: "SM-G985F"
             region: "AUT"
             codename: "y2slte"
+            imei: "353344111234568"
           - model: "SM-G986B"
             region: "AUT"
             codename: "y2sxxx"
+            imei: "355030111234561"
           - model: "SM-G988B"
             region: "AUT"
             codename: "z3sxxx"
+            imei: "354896111234566"
           - model: "SM-N980F"
             region: "DBT"
             codename: "c1sxx"
+            imei: "356214466007157"
           - model: "SM-N981B"
             region: "AUT"
             codename: "c1sxxx"
+            imei: "357879701234565"
           - model: "SM-N985F"
             region: "XSG"
             codename: "c2sxx"
+            imei: "352682501234560"
           - model: "SM-N986B"
             region: "AUT"
             codename: "c2sxxx"
+            imei: "354255811234568"
 
     steps:
       - name: Checkout repo
@@ -84,7 +93,7 @@ jobs:
 
       - name: Fetch firmware
         if: env.need_update == 1
-        run: samfirm -m ${{ matrix.model }} -r ${{ matrix.region }}
+        run: samfirm -m ${{ matrix.model }} -r ${{ matrix.region }} -i ${{ matrix.imei }}
 
       - name: Print directory structure
         if: env.need_update == 1
